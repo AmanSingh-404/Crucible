@@ -1,0 +1,25 @@
+version = 1
+revision = 3
+requires-python = ">=3.12"
+
+[manifest]
+members = [
+    "crucible",
+    "crucible-attacker",
+    "crucible-backend",
+]
+
+[[package]]
+name = "crucible"
+version = "0.1.0"
+source = { virtual = "." }
+
+[[package]]
+name = "crucible-attacker"
+version = "0.1.0"
+source = { editable = "attacker" }
+
+[[package]]
+name = "crucible-backend"
+version = "0.1.0"
+source = { editable = "backend" }
