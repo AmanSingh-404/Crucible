@@ -23,5 +23,5 @@ TOOL_FUNCS = {
 }
 
 
-def run_agent(user_input: str, max_steps: int = 6) -> AgentResult:
+def run_agent(user_input: str, max_steps: int = 10) -> AgentResult:
     return run_tool_agent(SYSTEM_PROMPT, user_input, TOOL_SCHEMAS, TOOL_FUNCS, max_steps)
