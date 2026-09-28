@@ -7,6 +7,7 @@ members = [
     "crucible",
     "crucible-attacker",
     "crucible-backend",
+    "crucible-fixtures",
 ]
 
 [[package]]
@@ -57,6 +58,11 @@ source = { editable = "attacker" }
 name = "crucible-backend"
 version = "0.1.0"
 source = { editable = "backend" }
+
+[[package]]
+name = "crucible-fixtures"
+version = "0.1.0"
+source = { editable = "fixtures" }
 
 [[package]]
 name = "distlib"
