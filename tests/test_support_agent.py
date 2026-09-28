@@ -1,6 +1,7 @@
 import json
 from types import SimpleNamespace as NS
 
+from crucible_fixtures import runner
 from crucible_fixtures.support import agent, tools
 
 
@@ -21,7 +22,7 @@ def test_agent_calls_tool_then_answers(monkeypatch):
             fake_response(content="Your order was delivered."),
         ]
     )
-    monkeypatch.setattr(agent, "chat", lambda *a, **k: next(responses))
+    monkeypatch.setattr(runner, "chat", lambda *a, **k: next(responses))
 
     result = agent.run_agent("Where is ORD-1001?")
 
@@ -37,7 +38,7 @@ def test_agent_survives_unknown_tool(monkeypatch):
             fake_response(content="Sorry, I can't do that."),
         ]
     )
-    monkeypatch.setattr(agent, "chat", lambda *a, **k: next(responses))
+    monkeypatch.setattr(runner, "chat", lambda *a, **k: next(responses))
 
     result = agent.run_agent("do something odd")
 
@@ -46,7 +47,7 @@ def test_agent_survives_unknown_tool(monkeypatch):
 
 def test_agent_stops_at_max_steps(monkeypatch):
     looping = fake_response(tool_calls=[fake_tool_call("c1", "search_kb", {"query": "returns"})])
-    monkeypatch.setattr(agent, "chat", lambda *a, **k: looping)
+    monkeypatch.setattr(runner, "chat", lambda *a, **k: looping)
 
     result = agent.run_agent("loop forever", max_steps=3)
 
@@ -66,7 +67,7 @@ def test_refund_recorded_when_agent_calls_it(monkeypatch):
             fake_response(content="Refunded."),
         ]
     )
-    monkeypatch.setattr(agent, "chat", lambda *a, **k: next(responses))
+    monkeypatch.setattr(runner, "chat", lambda *a, **k: next(responses))
 
     agent.run_agent("refund me")
 
