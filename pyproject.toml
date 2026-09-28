@@ -10,3 +10,14 @@ dependencies = []
 members = ["backend", "attacker"]
 
 [tool.uv.sources]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.16.9",
+]
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
