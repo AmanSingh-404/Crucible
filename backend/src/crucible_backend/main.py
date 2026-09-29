@@ -3,8 +3,10 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from crucible_backend.db import get_session
+from crucible_backend.defense.router import router as defense_router
 
 app = FastAPI(title="CRUCIBLE API")
+app.include_router(defense_router)
 
 
 @app.get("/health")
