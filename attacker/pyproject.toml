@@ -7,7 +7,9 @@ authors = [
     { name = "Aman Singh", email = "amanscode2005@gmail.com" }
 ]
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "crucible-fixtures",
+]
 
 [project.scripts]
 crucible-attacker = "crucible_attacker:main"
@@ -15,3 +17,6 @@ crucible-attacker = "crucible_attacker:main"
 [build-system]
 requires = ["uv_build>=0.12.3,<0.13.0"]
 build-backend = "uv_build"
+
+[tool.uv.sources]
+crucible-fixtures = { workspace = true }

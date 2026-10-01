@@ -162,6 +162,12 @@ dev = [
 name = "crucible-attacker"
 version = "0.1.0"
 source = { editable = "attacker" }
+dependencies = [
+    { name = "crucible-fixtures" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "crucible-fixtures", editable = "fixtures" }]
 
 [[package]]
 name = "crucible-backend"
