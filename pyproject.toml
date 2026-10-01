@@ -24,6 +24,7 @@ dev = [
     "httpx>=0.28.1",
     "pre-commit>=4.6.2",
     "pytest>=9.1.1",
+    "pytest-asyncio>=1.4.0",
     "ruff>=0.16.9",
 ]
 [tool.ruff]
@@ -33,3 +34,7 @@ target-version = "py312"
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP"]
 ignore = ["B008"]
+
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
