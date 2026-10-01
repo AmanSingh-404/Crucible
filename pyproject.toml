@@ -16,9 +16,11 @@ members = [
 [tool.uv.sources]
 crucible-fixtures = { workspace = true }
 crucible-backend = { workspace = true }
+crucible-attacker = { workspace = true }
 
 [dependency-groups]
 dev = [
+    "crucible-attacker",
     "crucible-backend",
     "crucible-fixtures",
     "httpx>=0.28.1",
