@@ -51,7 +51,9 @@ jobs:
       - name: Format check (ruff format)
         run: uv run ruff format --check .
 
-      - name: Run migrations
+      - name: Run migrations (test database)
+        env:
+          DATABASE_URL: postgresql+asyncpg://crucible:crucible_dev@localhost:5555/crucible_test
         run: uv run --package crucible-backend alembic -c backend/alembic.ini upgrade head
 
       - name: Tests (pytest)
