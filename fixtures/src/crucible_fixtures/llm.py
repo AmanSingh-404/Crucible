@@ -27,10 +27,14 @@ def get_client() -> Groq:
 
 
 def _extract_retry_seconds(error: groq.RateLimitError, default: float = 5.0) -> float:
-    """Groq's 429 message includes 'Please try again in 5.34s' - parse it so we
-    wait the right amount instead of guessing."""
-    match = re.search(r"try again in ([\d.]+)s", str(error))
-    return float(match.group(1)) + 0.5 if match else default
+    """Groq's 429 message gives either 'try again in 5.34s' (per-minute limit)
+    or 'try again in 9m37.584s' (daily limit, minutes+seconds combined)."""
+    match = re.search(r"try again in (?:(\d+)m)?([\d.]+)s", str(error))
+    if not match:
+        return default
+    minutes = float(match.group(1)) if match.group(1) else 0.0
+    seconds = float(match.group(2))
+    return minutes * 60 + seconds + 1.0
 
 
 def chat(messages: list[dict], tools: list[dict] | None = None, model: str | None = None):
@@ -38,7 +42,7 @@ def chat(messages: list[dict], tools: list[dict] | None = None, model: str | Non
     if tools:
         kwargs["tools"] = tools
 
-    rate_limit_retries = 0
+        rate_limit_retries = 0
     last_error = None
 
     while True:
@@ -50,8 +54,9 @@ def chat(messages: list[dict], tools: list[dict] | None = None, model: str | Non
                 if rate_limit_retries > MAX_RATE_LIMIT_RETRIES:
                     raise
                 wait = _extract_retry_seconds(exc)
+                print(f"[rate limit] waiting {wait:.0f}s (retry {rate_limit_retries})")
                 time.sleep(wait)
-                break  # restart the BadRequestError retry loop after waiting
+                break
             except groq.BadRequestError as exc:
                 last_error = exc
         else:
