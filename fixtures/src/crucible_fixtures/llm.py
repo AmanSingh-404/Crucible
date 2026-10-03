@@ -1,6 +1,8 @@
 """Shared LLM client for target agents (Groq)."""
 
 import os
+import re
+import time
 
 import groq
 from dotenv import load_dotenv
@@ -10,6 +12,7 @@ load_dotenv()
 
 DEFAULT_MODEL = os.getenv("GROQ_MODEL", "openai/gpt-oss-20b")
 MAX_ATTEMPTS = 3
+MAX_RATE_LIMIT_RETRIES = 5
 
 
 class ModelOutputError(RuntimeError):
@@ -23,14 +26,33 @@ def get_client() -> Groq:
     return Groq(api_key=key)
 
 
+def _extract_retry_seconds(error: groq.RateLimitError, default: float = 5.0) -> float:
+    """Groq's 429 message includes 'Please try again in 5.34s' - parse it so we
+    wait the right amount instead of guessing."""
+    match = re.search(r"try again in ([\d.]+)s", str(error))
+    return float(match.group(1)) + 0.5 if match else default
+
+
 def chat(messages: list[dict], tools: list[dict] | None = None, model: str | None = None):
     kwargs = {"model": model or DEFAULT_MODEL, "messages": messages}
     if tools:
         kwargs["tools"] = tools
+
+    rate_limit_retries = 0
     last_error = None
-    for _ in range(MAX_ATTEMPTS):
-        try:
-            return get_client().chat.completions.create(**kwargs)
-        except groq.BadRequestError as exc:
-            last_error = exc
-    raise ModelOutputError(str(last_error)) from last_error
+
+    while True:
+        for _ in range(MAX_ATTEMPTS):
+            try:
+                return get_client().chat.completions.create(**kwargs)
+            except groq.RateLimitError as exc:
+                rate_limit_retries += 1
+                if rate_limit_retries > MAX_RATE_LIMIT_RETRIES:
+                    raise
+                wait = _extract_retry_seconds(exc)
+                time.sleep(wait)
+                break  # restart the BadRequestError retry loop after waiting
+            except groq.BadRequestError as exc:
+                last_error = exc
+        else:
+            raise ModelOutputError(str(last_error)) from last_error
