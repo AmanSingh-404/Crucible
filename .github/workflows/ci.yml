@@ -27,6 +27,7 @@ jobs:
 
     env:
       DATABASE_URL: postgresql+asyncpg://crucible:crucible_dev@localhost:5555/crucible
+      TEST_DATABASE_URL: postgresql+asyncpg://crucible:crucible_dev@localhost:5555/crucible_test
 
     steps:
       - uses: actions/checkout@v4
@@ -39,6 +40,10 @@ jobs:
 
       - name: Sync workspace
         run: uv sync
+
+      - name: Create test database
+        run: |
+          PGPASSWORD=crucible_dev psql -h localhost -p 5555 -U crucible -d crucible -c "CREATE DATABASE crucible_test;"
 
       - name: Lint (ruff)
         run: uv run ruff check .
