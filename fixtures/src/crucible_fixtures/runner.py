@@ -77,6 +77,7 @@ def run_tool_agent(
                         "id": tc.id,
                         "type": "function",
                         "function": {"name": tc.function.name, "arguments": tc.function.arguments},
+                        "thought_signature": getattr(tc, "thought_signature", None),
                     }
                     for tc in message.tool_calls
                 ],
@@ -90,7 +91,12 @@ def run_tool_agent(
             result = _run_tool(funcs, tc.function.name, args)
             calls.append(ToolCall(tc.function.name, args, result))
             messages.append(
-                {"role": "tool", "tool_call_id": tc.id, "content": json.dumps(result, default=str)}
+                {
+                    "role": "tool",
+                    "tool_call_id": tc.id,
+                    "name": tc.function.name,
+                    "content": json.dumps(result, default=str),
+                }
             )
 
     return AgentResult(response="(max steps reached)", tool_calls=calls)
