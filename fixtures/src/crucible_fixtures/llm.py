@@ -13,12 +13,12 @@ import time
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
-from google.genai.errors import APIError, ClientError
+from google.genai.errors import APIError, ClientError, ServerError
 
 load_dotenv()
 
 DEFAULT_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.1-flash-lite")
-MAX_RETRIES = 3
+MAX_RETRIES = 5
 
 _client: genai.Client | None = None
 
@@ -188,9 +188,14 @@ def chat(messages: list[dict], tools: list[dict] | None = None, model: str | Non
                 continue
             print(f"[debug] ClientError (non-rate-limit): {exc!r}")
             raise ModelOutputError(msg) from exc
+        except ServerError as exc:
+            last_error = exc
+            wait = 5.0 * (attempt + 1)
+            print(f"[server busy] waiting {wait:.0f}s (retry {attempt + 1}/{MAX_RETRIES})")
+            time.sleep(wait)
+            continue
         except APIError as exc:
             last_error = exc
-            print(f"[debug] APIError on attempt {attempt + 1}: {exc!r}")
 
     print(f"[debug] last_error type={type(last_error).__name__} value={last_error!r}")
     raise ModelOutputError(str(last_error)) from last_error
